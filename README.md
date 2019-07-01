@@ -14,11 +14,16 @@ To disambiguate Finnish text, run:
 ```
 $ echo Tämä on hyvä esimerkkilause. | docker run -i teemuruokolainen/sense-disambiguator:latest
 ```
-The output consists of word token, word lemma, part-of-speech, assigned synset, the Brown corpus frequency of the synset ([Wiki](https://github.com/teemu-ruokolainen/sense-disambiguator/wiki)), and the synset definition:
->$ echo Tämä on hyvä esimerkkilause. | docker run -i teemuruokolainen/sense-disambiguator:latest
->
->
->
+
+The output consists of word token, word lemma, part-of-speech, assigned synset, the Brown corpus frequency of the synset (see [Wiki](https://github.com/teemu-ruokolainen/sense-disambiguator)), and the synset definition:
+
+>$ echo Tämä on hyvä esimerkki. | docker run -i teemuruokolainen/sense-disambiguator:latest\
+>token	lemma	pos	synset	Brown_frequency	definition\
+>Tämä	tämä	PRONOUN	-	-	-\
+>on	olla	VERB	Synset('be.v.01')	10742	have the quality of being; (copula, used with an adjective or a predicate noun)\
+>hyvä	hyvä	ADJECTIVE	Synset('good.a.01')	190	having desirable or positive qualities especially those suitable for a thing >specified\
+>esimerkki	esimerkki	NOUN	Synset('example.n.01')	50	an item of information that is typical of a class or group\
+>.	.	PUNCTUATION	-	-	-\
 
 To disambiguate a collection of texts (e.g. sentences or documents), run:
 ```
