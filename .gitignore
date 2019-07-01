@@ -1,0 +1,17 @@
+# OS (Mac OS X)
+._*
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Dev
+logs/*
+data/*
+models/*
+configs/*
+tests/example/example-data.msgpack
+tests/example/example-model*
+!.gitkeep
+foo*

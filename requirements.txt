@@ -1,0 +1,11 @@
+# General
+numpy==1.16.4
+regex==2019.06.08
+nltk==3.4.1
+pandas==0.24.2
+
+# Pylint
+pylint==2.3.1
+
+# Unittests
+pytest==4.6.2

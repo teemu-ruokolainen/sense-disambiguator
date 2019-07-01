@@ -1,0 +1,17 @@
+version: "3"
+
+services:
+
+  sense-disambiguator:
+    build: ./
+    image: teemuruokolainen/sense-disambiguator:latest
+    container_name: sense-disambiguator
+    volumes:
+      - ./src:/app/src
+      - ./tests:/app/tests
+      - ./configs:/app/configs
+      - ./bin:/app/bin
+      - ./logs:/app/logs
+      - ./data:/app/data
+      - ./models:/app/models
+    stdin_open: true
