@@ -14,4 +14,4 @@ configs/*
 tests/example/example-data.msgpack
 tests/example/example-model*
 !.gitkeep
-foo*
+foo* 

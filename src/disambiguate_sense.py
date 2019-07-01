@@ -230,22 +230,25 @@ def print_results(df: pandas.DataFrame) -> None:
     """
     Print resulting word senses
     """
-    print('token\tlemma\tsynset\tBrown_frequency\tdefinition')
+    print('token\tlemma\tpos\tsynset\tBrown_frequency\tdefinition')
     for _, row in df.iterrows():
         for token,\
             lemma,\
+            pos,\
             synset,\
             frequency,\
             definition in zip(row['token'],
                               row['lemma'],
+                              row['pos'],
                               row['synset'],
                               row['synset_Brown_frequency'],
                               row['synset_definition']):
-            print('{}\t{}\t{}\t{}\t{}'.format(token,
-                                              lemma,
-                                              synset,
-                                              frequency,
-                                              definition))
+            print('{}\t{}\t{}\t{}\t{}\t{}'.format(token,
+                                                  lemma,
+                                                  pos,
+                                                  synset,
+                                                  frequency,
+                                                  definition))
         print()
 
 def parse_args(argv: List[str]) -> argparse.Namespace:

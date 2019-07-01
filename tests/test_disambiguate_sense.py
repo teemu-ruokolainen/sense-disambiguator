@@ -4,12 +4,11 @@ Run inside container with:
 $ py.test -f /app/tests/test_disambiguate_sense.py -v
 """
 import pytest
-
 from src import disambiguate_sense
+import argparse
 import nltk
-
 from nltk.corpus.reader.wordnet import Synset
-
+import pandas
 
 """
 Fixtures
@@ -117,26 +116,32 @@ def test_ftb_label():
 def test_load_tokenizers():
     pass
 
-def test_tokenize(df_one_text_one_sentence):
-    df_res = preprocess.tokenize(df_one_text_one_sentence)
+def test_tokenize(df_one_text_one_sentence,
+                  df_one_text_two_sentences,
+                  df_two_texts_two_sentences):
+    df_res = disambiguate_sense.tokenize(df_one_text_one_sentence)
     assert 'token' in df_res
-    assert 'sentence_index' in df_res
+    assert 'sentence_start' in df_res
     assert len(df_res) == 1
 
-    df_res = preprocess.tokenize(df_one_text_two_sentences)
+    df_res = disambiguate_sense.tokenize(df_one_text_two_sentences)
     assert 'token' in df_res
-    assert 'sentence_index' in df_res
+    assert 'sentence_start' in df_res
     assert len(df_res) == 1
 
-    df_res = preprocess.tokenize(df_two_texts_two_sentences)
+    df_res = disambiguate_sense.tokenize(df_two_texts_two_sentences)
     assert 'token' in df_res
-    assert 'sentence_index' in df_res
+    assert 'sentence_start' in df_res
     assert len(df_res) == 2
 
 def test_add_text():
     pass
 
 def test_parse_args():
-    args = configparse.parse_args(['arbitrary-script.py', 'config.json'])
+    args = disambiguate_sense.parse_args(['arbitrary-script.py'])
     assert type(args) == argparse.Namespace
-    assert args.config_file == 'config.json'
+    assert args.notokenize == False
+
+    args = disambiguate_sense.parse_args(['arbitrary-script.py', '--notokenize'])
+    assert type(args) == argparse.Namespace
+    assert args.notokenize == True

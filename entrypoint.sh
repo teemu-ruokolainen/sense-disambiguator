@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-cat - | python3 src/disambiguate_sense.py
+cat - | python3 /app/src/disambiguate_sense.py 2> tmp
