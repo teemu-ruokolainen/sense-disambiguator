@@ -15,7 +15,7 @@ To disambiguate Finnish text, run:
 $ echo Tämä on hyvä esimerkkilause. | docker run -i teemuruokolainen/sense-disambiguator:latest
 ```
 
-The output consists of word token, word lemma, part-of-speech, assigned synset, the Brown corpus frequency of the synset (see [Wiki](https://github.com/teemu-ruokolainen/sense-disambiguator)), and the synset definition:
+The output consists of word token, word lemma, part-of-speech, assigned synset, the Brown corpus frequency of the synset (see [Wiki](https://github.com/teemu-ruokolainen/sense-disambiguator)), and the synset definition separated with a tab (\t):
 
 >$ echo Tämä on hyvä esimerkki. | docker run -i teemuruokolainen/sense-disambiguator:latest\
 >token	lemma	pos	synset	Brown_frequency	definition\
