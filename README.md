@@ -1,6 +1,6 @@
 # Sense Disambiguator for Finnish
 
-A word-sense disambiguator for Finnish based on the FinnWordNet and the most frequent sense criterion.
+A word-sense disambiguator for Finnish using the FinnWordNet synsets.
 
 The app reads in plain Finnish text, tokenizes it, and assigns the word tokens a synset (concept) from the FinnWordNet. For more information on the analysis pipeline, see the [Wiki](https://github.com/teemu-ruokolainen/sense-disambiguator/wiki).
 
@@ -14,7 +14,7 @@ To disambiguate Finnish text, run:
 ```
 $ echo Tämä on hyvä esimerkkilause. | docker run -i teemuruokolainen/sense-disambiguator:latest
 ```
-The output consists of word token, word lemma, part-of-speech, assigned synset, the Brown corpus frequency of the synset, and the synset definition:
+The output consists of word token, word lemma, part-of-speech, assigned synset, the Brown corpus frequency of the synset ([Wiki](https://github.com/teemu-ruokolainen/sense-disambiguator/wiki)), and the synset definition:
 >$ echo Tämä on hyvä esimerkkilause. | docker run -i teemuruokolainen/sense-disambiguator:latest
 >
 >
