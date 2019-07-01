@@ -1,4 +1,4 @@
-# Sense Disambiguator for Finnish
+# Word-Sense Disambiguator for Finnish
 
 A word-sense disambiguator for Finnish using the FinnWordNet synsets.
 
