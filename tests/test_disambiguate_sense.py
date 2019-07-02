@@ -102,18 +102,23 @@ def test_get_most_frequent_sense(synset_with_two_lemmas_with_counts_1_and_2,
                                                     == (synset_with_two_lemmas_with_counts_3_and_4, 7, 'some_definition')
 
 def test_disambiguate_senses():
+    """ TODO """
     pass
 
 def test_call_ftb_label():
+    """ TODO """
     pass
 
 def test_format_text_for_ftblabel():
+    """ TODO """
     pass
 
 def test_ftb_label():
+    """ TODO """
     pass
 
 def test_load_tokenizers():
+    """ TODO """
     pass
 
 def test_tokenize(df_one_text_one_sentence,
