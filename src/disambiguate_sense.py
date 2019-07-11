@@ -3,10 +3,6 @@
 Reads Finnish text (, tokenizes), POS tags and lemmatizes, and assigns
 word tokens the most frequent.
 
-Input: running text, multiple lines.
-Output:
-
-
 Run with:
 $ preprocess.py path_to_config_file
 """
