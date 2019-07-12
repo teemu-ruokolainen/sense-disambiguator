@@ -96,10 +96,10 @@ def test_get_synset_frequency(synset_with_two_lemmas_with_counts_1_and_2,
 
 def test_get_most_frequent_sense(synset_with_two_lemmas_with_counts_1_and_2,
                                  synset_with_two_lemmas_with_counts_3_and_4):
-    assert disambiguate_sense.get_most_frequent_sense([]) == ('-', '-', '-')
+    assert disambiguate_sense.get_most_frequent_sense([]) == (None, None)
     assert disambiguate_sense.get_most_frequent_sense([synset_with_two_lemmas_with_counts_1_and_2,
                                                        synset_with_two_lemmas_with_counts_3_and_4]) \
-                                                    == (synset_with_two_lemmas_with_counts_3_and_4, 7, 'some_definition')
+                                                    == (synset_with_two_lemmas_with_counts_3_and_4, 7)
 
 def test_disambiguate_senses():
     """ TODO """

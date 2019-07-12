@@ -5,6 +5,4 @@
 #Run in container with:
 #/app/bin/run-unittests.sh
 
-pytest /app/tests/test_preprocess.py
-pytest /app/tests/test_train.py
-pytest /app/tests/test_predict.py
+pytest /app/tests/test_disambiguate_sense.py

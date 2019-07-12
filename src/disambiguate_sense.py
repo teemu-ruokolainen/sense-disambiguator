@@ -1,24 +1,19 @@
 #!/usr/bin/env python
 """
 Reads Finnish text (, tokenizes), POS tags and lemmatizes, and assigns
-word tokens the most frequent.
+word tokens the most frequent sense according to Brown corpus frequencies.
 
 Run with:
 $ preprocess.py path_to_config_file
 """
 from __future__ import division
 import sys
-import random
 import logging
-import os
-from collections import Counter
 from typing import List, Dict, Tuple
-import numpy
 import subprocess
 import re
 import argparse
 import operator
-from io import StringIO
 
 import nltk
 from nltk.tokenize import TweetTokenizer
@@ -33,7 +28,6 @@ logging.basicConfig(
     format="%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s",
     handlers=[
         logging.FileHandler("{0}/{1}.log".format('/app/logs/', 'disambiguate_sense')),
-#        logging.FileHandler("{0}/{1}.log".format('/app/logs/', 'preprocess')),
         logging.StreamHandler()
     ])
 LOGGER = logging.getLogger()
@@ -41,7 +35,7 @@ LOGGER = logging.getLogger()
 """
 Map ftb-label POS tags to Wordnet POS tags
 """
-posmap = {
+POSMAP = {
     'ADJECTIVE' : 'a',
     'ADV' : 'r',
     'NOUN' : 'n',
@@ -49,6 +43,9 @@ posmap = {
 }
 
 def filter_pos(synset_list: List[Synset], pos: str) -> List[Synset]:
+    """
+    Filter out synsets from list with non-matching POS.
+    """
     res_synset_list = []
     for synset in synset_list:
         if synset.pos() == 's' and pos == 'a':
@@ -65,65 +62,66 @@ def get_synset_frequency(synset: Synset):
     return sum([lemma.count() for lemma in synset.lemmas()])
 
 def get_most_frequent_sense(synset_list: List[Synset]) -> Tuple[Synset, int, str]:
+    """
+    Apply most frequent sense criterion. The frequencies are from Brown corpus.
+    """
     if synset_list:
-        synset_frequency_list = [(synset, get_synset_frequency(synset), synset.definition())
-                                    for synset in synset_list]
+        synset_frequency_list = [(synset, get_synset_frequency(synset)) for synset in synset_list]
         synset_frequency_list.sort(key=operator.itemgetter(1))
-        synset, frequency, definition = synset_frequency_list[-1]
-        return synset, frequency, definition
+        synset, frequency = synset_frequency_list[-1]
+        return synset, frequency
 
-    return '-', '-', '-'
+    return None, None
 
-def disambiguate_senses(df: pandas.DataFrame) -> pandas.DataFrame:
+def disambiguate_senses(df: pandas.DataFrame) -> Tuple[pandas.DataFrame, Dict]:
     """
     Assign the most frequent sense according to the Brown corpus.
-    Add columns 'synset', 'synset_Brown_frequency', and 'synset_definition'.
+    Add column 'synset' to dataframe.
+    Return dataframe and Brown corpus synset frequencies as dict.
     """
+    LOGGER.info('Apply word-sense disambiguation...')
     nltk.download('wordnet')
     nltk.download('omw')
 
     synset_column = []
-    synset_brown_frequency_column = []
-    synset_definition_column = []
+    synset_cache = {}
+    synset_frequencies = {}
     for _, row in df.iterrows():
         synset_list = []
-        synset_brown_frequency_list = []
-        synset_definition_list = []
         for lemma, pos in zip(row['lemma'], row['pos']):
-            pos = posmap.get(pos, pos)
+            pos = POSMAP.get(pos, pos)
             if pos in ['n', 'v', 'a', 'r']:
-                synsets = wordnet.synsets(lemma, lang='fin')
-                # Remove synsets with incorrect POS
-                synsets = filter_pos(synsets, pos)
-                # Get the most frequent sense, Brown frequency, and definition
-                synset, frequency, definition = get_most_frequent_sense(synsets)
+                synset = synset_cache.get((lemma, pos), None)
+                if not synset:
+                    synsets = wordnet.synsets(lemma, lang='fin')
+                    # Remove synsets with incorrect POS
+                    synsets = filter_pos(synsets, pos)
+                    # Get the most frequent sense, Brown frequency
+                    synset, frequency = get_most_frequent_sense(synsets)
+                    # Add to cache
+                    synset_cache[(lemma, pos)] = synset
+                    # Add to synset frequency dict
+                    synset_frequencies[synset] = frequency
                 # Append
                 synset_list.append(synset)
-                synset_brown_frequency_list.append(frequency)
-                synset_definition_list.append(definition)
             else:
-                synset_list.append('-')
-                synset_brown_frequency_list.append('-')
-                synset_definition_list.append('-')
+                synset_list.append(None)
         synset_column.append(synset_list)
-        synset_brown_frequency_column.append(synset_brown_frequency_list)
-        synset_definition_column.append(synset_definition_list)
 
     df['synset'] = synset_column
-    df['synset_Brown_frequency'] = synset_brown_frequency_column
-    df['synset_definition'] = synset_definition_column
 
-    return df
+    return df, synset_frequencies
+
 
 def call_ftb_label(text_in: str):
     """
     Call ftb-label in subprocess, feed text_in, read analysis, and return decoded
     strings in a list. Each list item corresponds to one analyzed token.
     """
-    p1 = subprocess.Popen(['echo', text_in], stdout=subprocess.PIPE)
-    p2 = subprocess.Popen(['ftb-label'], stdin=p1.stdout, stdout=subprocess.PIPE)
-    p1.stdout.close()
-    out, err = p2.communicate()
+    proc1 = subprocess.Popen(['echo', text_in], stdout=subprocess.PIPE)
+    proc2 = subprocess.Popen(['ftb-label'], stdin=proc1.stdout, stdout=subprocess.PIPE)
+    proc1.stdout.close()
+    out, _ = proc2.communicate()
     return out.decode().split('\n')
 
 def format_text_for_ftblabel(df: pandas.DataFrame) -> str:
@@ -147,6 +145,7 @@ def ftb_label(df: pandas.DataFrame) -> pandas.DataFrame:
     Assign part-of-speech and lemma to tokenized text in column 'token'.
     Add columns 'lemma' and 'pos' with the same structure as 'token'.
     """
+    LOGGER.info('Apply ftb-label...')
     text_in = format_text_for_ftblabel(df)
     out = call_ftb_label(text_in)
 
@@ -181,6 +180,7 @@ def load_tokenizers() -> Tuple[nltk.tokenize.punkt.PunktSentenceTokenizer,
     """
     Return NLTK sentence detector and tokenizer instances.
     """
+    LOGGER.info('Load tokenizers...')
     nltk.download('punkt', quiet=True)
     sent_detector = nltk.data.load('tokenizers/punkt/finnish.pickle')
     tknzr = TweetTokenizer()
@@ -222,7 +222,8 @@ def add_text(df: pandas.DataFrame, text: str) -> pandas.DataFrame:
     df['text'] = text.split('\n')
     return df
 
-def print_results(df: pandas.DataFrame) -> None:
+def print_results(df: pandas.DataFrame,
+                  synset_frequencies: Dict) -> None:
     """
     Print resulting word senses
     """
@@ -231,20 +232,22 @@ def print_results(df: pandas.DataFrame) -> None:
         for token,\
             lemma,\
             pos,\
-            synset,\
-            frequency,\
-            definition in zip(row['token'],
-                              row['lemma'],
-                              row['pos'],
-                              row['synset'],
-                              row['synset_Brown_frequency'],
-                              row['synset_definition']):
+            synset in zip(row['token'],
+                          row['lemma'],
+                          row['pos'],
+                          row['synset']):
+
+            definition = None
+            if synset:
+                definition = synset.definition()
+
             print('{}\t{}\t{}\t{}\t{}\t{}'.format(token,
                                                   lemma,
                                                   pos,
                                                   synset,
-                                                  frequency,
+                                                  synset_frequencies.get(synset, None),
                                                   definition))
+
         print()
 
 def parse_args(argv: List[str]) -> argparse.Namespace:
@@ -269,10 +272,10 @@ def main(argv: List[str]) -> int:
     if not args.notokenize:
         df = tokenize(df)
     df = ftb_label(df)
-    df = disambiguate_senses(df)
+    df, synset_frequencies = disambiguate_senses(df)
 
     # Write to stdout
-    print_results(df)
+    print_results(df, synset_frequencies)
 
     return 0
 
