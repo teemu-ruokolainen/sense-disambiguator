@@ -118,7 +118,9 @@ def call_ftb_label(text_in: str):
     Call ftb-label in subprocess, feed text_in, read analysis, and return decoded
     strings in a list. Each list item corresponds to one analyzed token.
     """
-    proc1 = subprocess.Popen(['echo', text_in], stdout=subprocess.PIPE)
+    with open('/tmp/foobar', 'w') as f:
+        f.write(text_in)
+    proc1 = subprocess.Popen(['cat', '/tmp/foobar'], stdout=subprocess.PIPE)
     proc2 = subprocess.Popen(['ftb-label'], stdin=proc1.stdout, stdout=subprocess.PIPE)
     proc1.stdout.close()
     out, _ = proc2.communicate()
