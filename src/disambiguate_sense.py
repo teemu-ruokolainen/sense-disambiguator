@@ -4,7 +4,7 @@ Reads Finnish text (, tokenizes), POS tags and lemmatizes, and assigns
 word tokens the most frequent sense according to Brown corpus frequencies.
 
 Run with:
-$ preprocess.py path_to_config_file
+$ echo "Tämä on esimerkkilause" | disambiguate_sense.py
 """
 from __future__ import division
 import sys
